@@ -2,6 +2,8 @@ from flask import Flask, request, redirect, url_for, flash, jsonify, render_temp
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
 import os
+import LPGAN
+from LPGAN import TF, TF_HDR
 
 UPLOAD_FOLDER = 'data/input/'
 PROCESSED_FOLDER = 'data/output/'
@@ -51,8 +53,6 @@ def upload_file():
 
 @app.route('/process/<photo>', methods=['GET', 'POST'])
 def process(photo):
-	import LPGAN
-	from LPGAN import TF, TF_HDR
 	print("Processing enhance image " + photo)
 	file_out_no_ext = os.path.splitext(photo)[0]+"-enhanced"
 	print("before get input")
@@ -69,18 +69,7 @@ def process(photo):
 	TF_HDR.processImg(file_name_HDR , file_out_no_ext_HDR)
 	#hdr_img  = file_out_no_ext_HDR + '.png'
 	hdr_img = send_from_directory(app.config['PROCESSED_FOLDER'], file_out_no_ext_HDR + '.png')
-	return '''
-	<!DOCTYPE html>
-	<html>
-	<body>
-
-	<h2>Enhanced Image</h2>
-	<img src="'''+enhanced_img+'''">
-	<hr />
-	<h2>HDR Image</h2>
-	<img src="'''+hdr_img+'''">
-	</body>
-	</html>'''
+	return enhanced_img, hdr_img
 
 if __name__ == '__main__':
 	app.run(debug=True)
