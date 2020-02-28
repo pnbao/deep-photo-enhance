@@ -13,14 +13,16 @@ PROCESSED_FOLDER = 'data/output'
 photo = 'small.png'
 print("Processing image " + photo)
 file_out_no_ext = os.path.splitext(photo)[0]+"-enhanced"
-file_name = TF.getInputPhoto(photo)
-TF.processImg(file_name , file_out_no_ext)
+# file_name = TF.getInputPhoto(photo)
+# TF.processImg(file_name , file_out_no_ext)
+TF.processImg(photo, file_out_no_ext)
 enhanced_img = os.path.join(PROCESSED_FOLDER, file_out_no_ext + '.png')
-	
+
 photo_HDR = photo
 print("Processing HDR image " + photo_HDR)
 file_out_no_ext_HDR = os.path.splitext(photo_HDR)[0]+"-HDR"
-file_name_HDR = TF_HDR.getInputPhoto(photo_HDR)
-TF_HDR.processImg(file_name_HDR , file_out_no_ext_HDR)
+# file_name_HDR = TF_HDR.getInputPhoto(photo_HDR)
+# TF_HDR.processImg(file_name_HDR , file_out_no_ext_HDR)
+TF_HDR.processImg(photo_HDR , file_out_no_ext_HDR)
 hdr_img  = os.path.join(PROCESSED_FOLDER, file_out_no_ext_HDR + '.png')
 print(enhanced_img, hdr_img)
