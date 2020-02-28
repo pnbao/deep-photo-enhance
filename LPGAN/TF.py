@@ -65,17 +65,7 @@ def normalizeImage(img, max_length):
 
     is_need_resize = max_l != FLAGS['data_image_size']
     if is_need_resize:
-        use_gpu = False 
-        if use_gpu and is_downsample:
-            # gpu
-            new_h, new_w, is_normalize = get_normalize_size_shape_method(img, max_length)
-            if not is_normalize:
-                dict_d = [img, new_h, new_w]
-                dict_t = [tf_input_img_ori, tf_img_new_h, tf_img_new_w]
-                img = sess.run(tf_resize_img, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
-        else:
-            # cpu
-            img = cpu_normalize_image(img, max_length)
+        img = cpu_normalize_image(img, max_length)
     print("Finish normalize")
     return img
 
