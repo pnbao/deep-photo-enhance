@@ -14,7 +14,7 @@ test_df = DataFlow()
 netG = NetInfo('netG-%d' % FLAGS['num_exp'], test_df)
 with tf.name_scope(netG.name):
     with tf.compat.v1.variable_scope(netG.variable_scope_name) as scope_full:
-        with tf.variable_scope(netG.variable_scope_name + 'A') as scopeA:
+        with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
             netG_test_output1, netG_test_list = model(netG, test_df.input1, test_df.input2, False, netG_act_o, None, is_first=True)
             netG_test_gfeature1 = netG_test_list[25]
             scopeA.reuse_variables()
@@ -28,10 +28,10 @@ assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(para
 saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
 
 with tf.name_scope("Resize"):
-    tf_input_img_ori = tf.placeholder(tf.uint8, shape=[None, None, 3])
-    tf_img_new_h = tf.placeholder(tf.int32)
-    tf_img_new_w = tf.placeholder(tf.int32)
-    tf_resize_img = tf.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
+    tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
+    tf_img_new_h = tf.compat.v1.placeholder(tf.int32)
+    tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
+    tf_resize_img = tf.image.resize(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
 
 sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
 sess_config.gpu_options.allow_growth = True

@@ -34,10 +34,10 @@ random.seed(FLAGS['process_random_seed'])
 class DataFlow(object):
     def __init__(self):
         b = 1
-        self.input1_src = tf.placeholder(tf.as_dtype(FLAGS['data_input_dtype']), shape=[b, None, None, FLAGS['data_image_channel']])
+        self.input1_src = tf.compat.v1.placeholder(tf.as_dtype(FLAGS['data_input_dtype']), shape=[b, None, None, FLAGS['data_image_channel']])
         self.input1 = tf.cast(self.input1_src, FLAGS['data_compute_dtype']) / self.input1_src.dtype.max
-        self.input2 = tf.placeholder(tf.as_dtype(FLAGS['data_compute_dtype']), shape=[b, 1, 1, 128])
-        self.rate = tf.placeholder(tf.int32)
+        self.input2 = tf.compat.v1.placeholder(tf.as_dtype(FLAGS['data_compute_dtype']), shape=[b, 1, 1, 128])
+        self.rate = tf.compat.v1.placeholder(tf.int32)
 
 def flatten_list(xs):
     result = []

@@ -67,7 +67,7 @@ def insert_string_to_list(index, string, data_list):
         if index == -1:
             ind = len(data_list[i])
         else:
-            ind = index    
+            ind = index
         data_list[i] = data_list[i][:ind] + string + data_list[i][ind:]
     return data_list
 
@@ -173,7 +173,7 @@ def gcd(a,b):
     while b > 0:
         a, b = b, a % b
     return a
-    
+
 def lcm(a, b):
     return a * b // gcd(a, b)
 
@@ -212,7 +212,7 @@ def normalize_to_one_score(scores):
         s = s + sw * scores[i]
     scores = (s - 1) / 4.0
     return scores
-    
+
 def tf_normlize_to_one_score(scores):
     result = []
     score_weight = [1, 2, 3, 4, 5]
@@ -248,7 +248,7 @@ def tf_crop_rect(img, df, i):
     rec_t = df.rect[i]
     img_t = img[i, rec_t[0]:rec_t[1], rec_t[2]:rec_t[3], :]
     return img_t
-    
+
 def tf_photorealism_loss(img, df, i, is_our):
     rec_t = df.rect[i]
     img_t = img[i, rec_t[0]:rec_t[1], rec_t[2]:rec_t[3], :]
@@ -352,7 +352,7 @@ def tf_log2(x):
   return numerator / denominator
 
 def tf_gaussian_noise_layer(input_layer, std):
-    noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32) 
+    noise = tf.random_normal(shape=tf.shape(input_layer), mean=0.0, stddev=std, dtype=tf.float32)
     return input_layer + noise
 
 def tf_crop_to_patch(inputs, labels, patch_size, channel, seed):
@@ -383,7 +383,7 @@ def tf_random_crop_resize(inputs, labels, img_size, channel, scale, seed):
         crop_size = tf.concat(0, [crop_size, [channel * 2]])
         concat_tensor = tf.concat(concat_dim=2, values=[inputs_list[i], labels_list[i]])
         concat_tensor = tf.random_crop(concat_tensor, crop_size, seed=seed)
-        concat_tensor = tf.image.resize_images(concat_tensor, [img_size, img_size], method=tf.image.ResizeMethod.BICUBIC)
+        concat_tensor = tf.image.resize(concat_tensor, [img_size, img_size], method=tf.image.ResizeMethod.BICUBIC)
         split0, split1 = tf.split(2, 2, concat_tensor)
         inputs_list[i] = split0 #gaussian_noise_layer(split0, noise_std)
         labels_list[i] = split1

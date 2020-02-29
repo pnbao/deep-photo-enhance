@@ -14,7 +14,7 @@ def conv_net_block(conv_net, net_info, tensor_list, is_first, is_training, act_o
         if FLAGS['mode_use_debug']:
             print(net_info.architecture_log[-2])
             print(net_info.architecture_log[-1])
-    with tf.variable_scope(conv_net['net_name']):
+    with tf.compat.v1.variable_scope(conv_net['net_name']):
         for l_index, layer_o in enumerate(conv_net['layers']):
             layer = layer_o['name']
             if layer == "relu":
@@ -122,6 +122,6 @@ def img_GD_loss(img1, img2):
 def regularization_cost(net_info):
     cost = 0
     for w, p in zip(net_info.weights, net_info.parameter_names):
-        if p[-2:] == "_w": 
+        if p[-2:] == "_w":
             cost = cost + (tf.nn.l2_loss(w))
     return cost

@@ -39,7 +39,7 @@ def exe_prelu_layer(tensor, net_info, l_index, is_first, act_o):
     parameter_count = 1
     alphas_l = []
     for i in range(act_o['size']):
-        alphas = tf.get_variable(name=PARAMETERS_NAME[p_index] % (l_index, i), \
+        alphas = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index] % (l_index, i), \
                                  shape=tensor.get_shape()[-1], \
                                  initializer=tf.constant_initializer(0.0))
         alphas_l.append(alphas)
@@ -86,7 +86,7 @@ def exe_selu_layer(tensor):
     #scale = 1.0507009873554804934193349852946
     alpha, scale = (1.0198755295894968, 1.0026538655307724)
     return scale*tf.where(tensor>=0.0, tensor, alpha*tf.nn.elu(tensor))
-    
+
 #  .#####...##..##.
 #  .##..##..###.##.
 #  .#####...##.###.
@@ -110,10 +110,10 @@ def exe_bn_layer(tensor, layer_o, net_info, l_index, is_first, is_training, trai
 
     pars = []
     for i in range(act_o['size']):
-        offset  = tf.get_variable(name=PARAMETERS_NAME[p_index  ] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=offset_trainable)
-        scale   = tf.get_variable(name=PARAMETERS_NAME[p_index+1] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=scale_trainable)
-        mv_mean = tf.get_variable(name=PARAMETERS_NAME[p_index+2] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=False)
-        mv_var  = tf.get_variable(name=PARAMETERS_NAME[p_index+3] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=False)
+        offset  = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index  ] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=offset_trainable)
+        scale   = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index+1] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=scale_trainable)
+        mv_mean = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index+2] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=False)
+        mv_var  = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index+3] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=False)
         pars.append([offset, scale, mv_mean, mv_var])
     offset, scale, mv_mean, mv_var = pars[act_o['index']]
 
@@ -156,8 +156,8 @@ def exe_in_layer(tensor, layer_o, net_info, l_index, is_first, trainable, act_o)
     scale_trainable  = layer_o['use_scale']  if trainable else False
     pars = []
     for i in range(act_o['size']):
-        offset = tf.get_variable(name=PARAMETERS_NAME[p_index  ] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=offset_trainable)
-        scale  = tf.get_variable(name=PARAMETERS_NAME[p_index+1] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=scale_trainable)
+        offset = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index  ] % (l_index, i), shape=shape, initializer=tf.constant_initializer(0.0), trainable=offset_trainable)
+        scale  = tf.compat.v1.get_variable(name=PARAMETERS_NAME[p_index+1] % (l_index, i), shape=shape, initializer=tf.constant_initializer(1.0), trainable=scale_trainable)
         pars.append([offset, scale])
     offset, scale = pars[act_o['index']]
 
@@ -255,7 +255,7 @@ def exe_conv_layer(tensor, layer_o, net_info, l_index, is_first, is_training, tr
                             trainable=trainable)
     if dilation_rate is None:
         conv_w = tf.reshape(conv_w_tmp, [1, kernel, kernel, -1])
-        conv_w = tf.image.resize_images(conv_w, [rate*(kernel-1)+1, rate*(kernel-1)+1], method=tf.image.ResizeMethod.AREA, align_corners=False)
+        conv_w = tf.image.resize(conv_w, [rate*(kernel-1)+1, rate*(kernel-1)+1], method=tf.image.ResizeMethod.AREA, align_corners=False)
         conv_w = tf.reshape(conv_w, [rate*(kernel-1)+1, rate*(kernel-1)+1, tf.shape(tensor)[-1], filter])
         conv_w = conv_w * kernel * kernel / tf.cast((rate*(kernel-1)+1) * (rate*(kernel-1)+1), tf.float32)
 
@@ -271,10 +271,10 @@ def exe_conv_layer(tensor, layer_o, net_info, l_index, is_first, is_training, tr
            tensor = tf.pad(tensor, [[0, 0], [pad_size, pad_size], [pad_size, pad_size], [0, 0]], pad_mode)
         if is_training and dropout < 1:
            tensor = tf.nn.dropout(tensor, dropout, seed=seed)
-           
+
         tensor = tf.nn.bias_add(tf.nn.atrous_conv2d(tensor, conv_w_tmp, rate=dilation_rate, padding=padding), conv_b)
         if stride > 1:
-            tensor = tf.image.resize_images(tensor, [tf.shape(tensor)[1]//stride, tf.shape(tensor)[2]//stride], method=tf.image.ResizeMethod.AREA, align_corners=False)
+            tensor = tf.image.resize(tensor, [tf.shape(tensor)[1]//stride, tf.shape(tensor)[2]//stride], method=tf.image.ResizeMethod.AREA, align_corners=False)
 
     if is_first:
         net_info.weights.extend((conv_w_tmp, conv_b))
@@ -309,11 +309,11 @@ def exe_conv_res_layer(res_tensor, layer_o, tensor_list, net_info, l_index, is_f
     padding = layer_o['padding']
     filter = res_tensor.get_shape()[-1]
     tensor = tensor_list[index]
-    conv_w = tf.get_variable(PARAMETERS_NAME[p_index  ] % l_index, \
+    conv_w = tf.compat.v1.get_variable(PARAMETERS_NAME[p_index  ] % l_index, \
                             [kernel, kernel, tensor.get_shape()[-1], filter], \
                             initializer=initializer, \
                             trainable=trainable)
-    conv_b = tf.get_variable(PARAMETERS_NAME[p_index+1] % l_index, \
+    conv_b = tf.compat.v1.get_variable(PARAMETERS_NAME[p_index+1] % l_index, \
                             [filter], \
                             initializer=tf.constant_initializer(0), \
                             trainable=trainable)
@@ -409,7 +409,7 @@ def exe_resize_layer(tensor, layer_o):
     if t_shape[1] == None or t_shape[2] == None:
         t_shape = tf.shape(tensor)
     t_size = [t_shape[1] * scale, t_shape[2] * scale]
-    tensor = tf.image.resize_images(tensor, t_size, method=method, align_corners=align_corners)
+    tensor = tf.image.resize(tensor, t_size, method=method, align_corners=align_corners)
     return tensor
 
 #  ..####....####...##..##...####....####...######.
