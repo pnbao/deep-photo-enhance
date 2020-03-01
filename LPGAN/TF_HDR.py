@@ -6,12 +6,12 @@ from .MODEL_HDR import *
 from .FUNCTION import *
 from .PREPROCESSING_HDR import *
 
-print(current_time() + ', exp = %s, load_model path = %s' % (FLAGS['num_exp'], os.path.dirname(os.path.abspath(__file__))))
+print(current_time() + ', exp = %s, load_model path = %s' % (FLAGS['num_exp_HDR'], os.path.dirname(os.path.abspath(__file__))))
 os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS['num_gpu']
 netG_act_o = dict(size=1, index=0)
 
 test_df = DataFlow()
-netG = NetInfo('netG-%d' % FLAGS['num_exp'], test_df)
+netG = NetInfo('netG-%d' % FLAGS['num_exp_HDR'], test_df)
 with tf.name_scope(netG.name):
     with tf.compat.v1.variable_scope(netG.variable_scope_name) as scope_full:
         with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
@@ -26,12 +26,6 @@ with tf.name_scope(netG.name):
 
 assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(parameters)'
 saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
-
-with tf.name_scope("Resize"):
-    tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
-    tf_img_new_h = tf.compat.v1.placeholder(tf.int32)
-    tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
-    tf_resize_img = tf.image.resize(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
 
 sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
 sess_config.gpu_options.allow_growth = True
@@ -77,9 +71,7 @@ def getInputPhoto(file_name):
         h, w, _ = input_img.shape
         resize_input_img = normalizeImage(input_img, FLAGS['data_max_image_size']) if max(h, w) > FLAGS['data_max_image_size'] else input_img
         file_name = file_name_without_ext + FLAGS['data_output_ext']
-        #cv2.imwrite(FLAGS['folder_input'] + file_name, resize_input_img)
         cv2.imwrite(FLAGS['folder_input'] + file_name_without_ext + '.png', resize_input_img)
-        #os.rename(FLAGS['folder_input'] + file_name_without_ext + '.jpg', FLAGS['folder_input'] + file_name)
         return file_name
     else:
         return None
@@ -114,7 +106,6 @@ def processImg(file_in_name, file_out_name_without_ext):
             crop_img = input_img[None, y-padrf:y+padrf+patch, x-padrf:x+padrf+patch, :]
             dict_d = [crop_img, gfeature, rate]
             dict_t = [test_df.input1_src, test_df.input2, test_df.rate]
-            #enhance_test_img = sess.run(netG_test_dilation_list[min(9, rate-1)], feed_dict={t:d for t, d in zip(dict_t, dict_d)})
             enhance_test_img = sess.run(netG_test_output1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
             enhance_test_img = enhance_test_img[0, padrf:-padrf, padrf:-padrf, :]
             x_list.append(enhance_test_img)
@@ -123,14 +114,6 @@ def processImg(file_in_name, file_out_name_without_ext):
     enhance_test_img = enhance_test_img[:h, :w, :]
     enhance_test_img = safe_casting(enhance_test_img * tf.as_dtype(FLAGS['data_input_dtype']).max, FLAGS['data_input_dtype'])
     enhanced_img_file_name = file_out_name_without_ext + FLAGS['data_output_ext']
-    enhance_img_file_path = FLAGS['folder_test_img'] + enhanced_img_file_name
-    #try:
-    #    print(current_time() + ', try remove file path = %s' % enhance_img_file_path)
-    #    os.remove(enhance_img_file_path)
-    #except OSError as e:
-    #    print(current_time() + ', remove fail, error = %s' % e.strerror)
-    #cv2.imwrite(enhance_img_file_path, enhance_test_img)
     cv2.imwrite(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png', enhance_test_img)
-    #os.rename(FLAGS['folder_test_img'] + file_out_name_without_ext + '.jpg', enhance_img_file_path)
 
     return enhanced_img_file_name

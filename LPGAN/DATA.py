@@ -26,8 +26,8 @@ FLAGS['data_padrf_size'] = 64
 FLAGS['data_max_image_size'] = 16 * 64 * 2
 FLAGS['data_image_channel'] = 3
 FLAGS['process_random_seed'] = 2
-FLAGS['folder_input'] = 'data/input/'
-FLAGS['folder_test_img']  = 'data/output/'
+FLAGS['folder_input'] = 'static/data/input/'
+FLAGS['folder_test_img']  = 'static/data/output/'
 FLAGS['max_dilation'] = 10
 random.seed(FLAGS['process_random_seed'])
 

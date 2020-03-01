@@ -27,12 +27,6 @@ with tf.name_scope(netG.name):
 assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(parameters)'
 saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
 
-with tf.name_scope("Resize"):
-    tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
-    tf_img_new_h = tf.compat.v1.placeholder(tf.int32)
-    tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
-    tf_resize_img = tf.image.resize(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
-
 sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
 sess_config.gpu_options.allow_growth = True
 
@@ -78,9 +72,7 @@ def getInputPhoto(file_name):
         h, w, _ = input_img.shape
         resize_input_img = normalizeImage(input_img, FLAGS['data_max_image_size']) if max(h, w) > FLAGS['data_max_image_size'] else input_img
         file_name = file_name_without_ext + FLAGS['data_output_ext']
-        #cv2.imwrite(FLAGS['folder_input'] + file_name, resize_input_img)
         cv2.imwrite(FLAGS['folder_input'] + file_name_without_ext + '.png', resize_input_img)
-        #os.rename(FLAGS['folder_input'] + file_name_without_ext + '.jpg', FLAGS['folder_input'] + file_name)
         return file_name
     else:
         return None

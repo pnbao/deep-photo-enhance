@@ -6,8 +6,8 @@ from .CONVNET import *
 # Configure
 FLAGS = {}
 FLAGS['num_gpu'] = '3'
-FLAGS['num_exp']   = 999
-FLAGS['num_epoch'] = 90
+FLAGS['num_exp_HDR']   = 999
+FLAGS['num_epoch_HDR'] = 90
 FLAGS['method'] = 'Supervised on MIT-Adobe-5K'
 FLAGS['mode_use_debug'] = False
 FLAGS['netG_init_method'] = 'var_scale' #var_scale, rand_uniform, rand_normal, truncated_normal
@@ -15,8 +15,8 @@ FLAGS['netG_init_weight'] = 1e-3
 FLAGS['netG_base_learning_rate'] = 1e-5
 FLAGS['format_log_step'] = '%.3f'
 FLAGS['root_path'] = os.path.dirname(__file__)
-FLAGS['load_model_path']     = FLAGS['root_path'] + '/model/' + '%s.ckpt'     % (FLAGS['format_log_step'] % FLAGS['num_epoch'])
-FLAGS['load_model_path_new'] = FLAGS['root_path'] + '/model/' + '%s-new.ckpt' % (FLAGS['format_log_step'] % FLAGS['num_epoch'])
+FLAGS['load_model_path']     = FLAGS['root_path'] + '/model/' + '%s.ckpt'     % (FLAGS['format_log_step'] % FLAGS['num_epoch_HDR'])
+FLAGS['load_model_path_new'] = FLAGS['root_path'] + '/model/' + '%s-new.ckpt' % (FLAGS['format_log_step'] % FLAGS['num_epoch_HDR'])
 FLAGS['data_output_ext'] = '.png'
 FLAGS['data_input_dtype']   = np.uint8
 FLAGS['data_compute_dtype'] = np.float32
@@ -26,8 +26,8 @@ FLAGS['data_padrf_size'] = 64
 FLAGS['data_max_image_size'] = 16 * 64 * 2
 FLAGS['data_image_channel'] = 3
 FLAGS['process_random_seed'] = 2
-FLAGS['folder_input'] = 'data/input/'
-FLAGS['folder_test_img']  = 'data/output/'
+FLAGS['folder_input'] = 'static/data/input/'
+FLAGS['folder_test_img']  = 'static/data/output/'
 FLAGS['max_dilation'] = 10
 random.seed(FLAGS['process_random_seed'])
 
