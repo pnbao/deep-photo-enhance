@@ -41,6 +41,8 @@ sess.run(tf.compat.v1.global_variables_initializer())
 sess.run(tf.compat.v1.local_variables_initializer())
 saver.restore(sess, FLAGS['load_model_path_new'])
 
+tf.compat.v1.saved_model.simple_save(sess, 'LPGAN/model/HDR/', inputs={"x": []}, outputs={"y": []})
+
 def checkValidImg(input_img):
     print(current_time() + ', [checkValidImg]')
     if input_img is None:
