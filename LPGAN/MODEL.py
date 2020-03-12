@@ -102,26 +102,3 @@ def model(net_info, tensor, global_tensor, is_training, act_o, dilation_rate, is
     else:
         assert False, 'net_info.name ERROR = %s' % net_info.name
     return result, tensor_list
-
-def img_L2_loss(img1, img2, use_local_weight):
-    if use_local_weight:
-        w = -tf.log(tf.cast(img2, tf.float64) + tf.exp(tf.constant(-99, dtype=tf.float64))) + 1
-        w = tf.cast(w * w, tf.float32)
-        return tf.reduce_mean(w * tf.square(tf.sub(img1, img2)))
-    else:
-        return tf.reduce_mean(tf.square(tf.sub(img1, img2)))
-
-def img_L1_loss(img1, img2):
-    return tf.reduce_mean(tf.abs(tf.sub(img1, img2)))
-
-def img_GD_loss(img1, img2):
-    img1 = tf_imgradient(tf.pack([img1]))
-    img2 = tf_imgradient(tf.pack([img2]))
-    return tf.reduce_mean(tf.square(tf.sub(img1, img2)))
-
-def regularization_cost(net_info):
-    cost = 0
-    for w, p in zip(net_info.weights, net_info.parameter_names):
-        if p[-2:] == "_w":
-            cost = cost + (tf.nn.l2_loss(w))
-    return cost

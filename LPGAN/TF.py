@@ -42,17 +42,6 @@ sess.run(tf.compat.v1.global_variables_initializer())
 sess.run(tf.compat.v1.local_variables_initializer())
 saver.restore(sess, FLAGS['load_model_path_new'])
 
-#tf.compat.v1.saved_model.simple_save(sess, 'LPGAN/model/', inputs={"netG-604_var_scope/netG-604_var_scopeA/netG-604_1/bn_11_0_mv_mean": "f"}, outputs={"netG-604_var_scope/netG-604_var_scopeA/netG-604_3/conv_5_w": ""})
-#graph = tf.Graph()
-#with graph.as_default():
-#    metagraph = tf.compat.v1.saved_model.loader.load(sess, FLAGS['load_model_path_new'])
-
-#inputs_mapping = dict(metagraph.signature_def['serving_default'].inputs)
-#outputs_mapping = dict(metagraph.signature_def['serving_default'].outputs)
-
-#print("input", inputs_mapping)
-#print("output", outputs_mapping)
-
 
 def checkValidImg(input_img):
     print(current_time() + ', [checkValidImg]')
