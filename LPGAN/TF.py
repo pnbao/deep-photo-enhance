@@ -90,8 +90,9 @@ def processImg(file_in_name, file_out_name_without_ext):
     with tf.compat.v1.Session(graph=loaded_graph) as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
-
+        # tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
+        saver.restore(sess, FLAGS['load_model_path_new'])
+        
         resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
         resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
         resize_input_img = resize_input_img[None, :, :, :]
