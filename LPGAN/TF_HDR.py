@@ -43,8 +43,9 @@ with tf.name_scope("Resize"):
 # sess.run(tf.compat.v1.local_variables_initializer())
 # saver.restore(sess, FLAGS['load_model_path_new'])
 
-graph = load_graph(FLAGS['load_saved_model_path'])
+graph = tf.Graph()
 sess = tf.compat.v1.Session(graph=graph)
+tf.saved_model.loader.load(sess, ["serve"], FLAGS['load_saved_model_path'])
 
 def checkValidImg(input_img):
     print(current_time() + ', [checkValidImg]')
