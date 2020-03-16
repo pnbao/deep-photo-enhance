@@ -74,7 +74,7 @@ def normalizeImage(img, max_length):
 def getInputPhoto(file_name):
     print(current_time() + ', [getInputPhoto]: file_name = %s' % (FLAGS['folder_input'] + file_name))
     file_name_without_ext = os.path.splitext(file_name)[0]
-    input_img = np.array(Image.open(FLAGS['folder_input'] + file_name)
+    input_img = np.array(Image.open(FLAGS['folder_input'] + file_name))
     os.remove(FLAGS['folder_input'] + file_name)
     if checkValidImg(input_img):
         h, w, _ = input_img.shape
@@ -87,7 +87,7 @@ def getInputPhoto(file_name):
 
 def processImg(file_in_name, file_out_name_without_ext):
     print(current_time() + ', [processImg]: file_name = %s' % (FLAGS['folder_input'] + file_in_name))
-    input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name)
+    input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))
     resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
     resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
     resize_input_img = resize_input_img[None, :, :, :]
