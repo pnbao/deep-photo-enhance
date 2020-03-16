@@ -42,12 +42,6 @@ with tf.name_scope("Resize"):
 # sess.run(tf.compat.v1.local_variables_initializer())
 # saver.restore(sess, FLAGS['load_model_path_new'])
 
-graph = tf.Graph()
-sess = tf.compat.v1.Session(graph=graph)
-sess.run(tf.compat.v1.global_variables_initializer())
-sess.run(tf.compat.v1.local_variables_initializer())
-tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
-
 def checkValidImg(input_img):
     print(current_time() + ', [checkValidImg]')
     if input_img is None:
@@ -92,39 +86,45 @@ def getInputPhoto(file_name):
 
 def processImg(file_in_name, file_out_name_without_ext):
     input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))
-    resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
-    resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
-    resize_input_img = resize_input_img[None, :, :, :]
+    loaded_graph = tf.Graph()
+    with tf.compat.v1.Session(graph=loaded_graph) as sess:
+        sess.run(tf.compat.v1.global_variables_initializer())
+        sess.run(tf.compat.v1.local_variables_initializer())
+        tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
 
-    dict_d = [resize_input_img, 1]
-    dict_t = [test_df.input1_src, test_df.rate]
-    gfeature = sess.run(netG_test_gfeature1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
-    h, w, c = input_img.shape
-    rate = int(round(max(h, w) / FLAGS['data_image_size']))
-    if rate == 0:
-        rate = 1
-    padrf = rate * FLAGS['data_padrf_size']
-    patch = FLAGS['data_patch_size']
-    pad_h = 0 if h % patch == 0 else patch - (h % patch)
-    pad_w = 0 if w % patch == 0 else patch - (w % patch)
-    pad_h = pad_h + padrf if pad_h < padrf else pad_h
-    pad_w = pad_w + padrf if pad_w < padrf else pad_w
-    input_img = np.pad(input_img, [(padrf, pad_h), (padrf, pad_w), (0, 0)], 'reflect')
-    y_list = []
-    for y in range(padrf, h+padrf, patch):
-        x_list = []
-        for x in range(padrf, w+padrf, patch):
-            crop_img = input_img[None, y-padrf:y+padrf+patch, x-padrf:x+padrf+patch, :]
-            dict_d = [crop_img, gfeature, rate]
-            dict_t = [test_df.input1_src, test_df.input2, test_df.rate]
-            enhance_test_img = sess.run(netG_test_output1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
-            enhance_test_img = enhance_test_img[0, padrf:-padrf, padrf:-padrf, :]
-            x_list.append(enhance_test_img)
-        y_list.append(np.concatenate(x_list, axis=1))
-    enhance_test_img = np.concatenate(y_list, axis=0)
-    enhance_test_img = enhance_test_img[:h, :w, :]
-    enhance_test_img = safe_casting(enhance_test_img * tf.as_dtype(FLAGS['data_input_dtype']).max, FLAGS['data_input_dtype'])
-    enhanced_img_file_name = file_out_name_without_ext + FLAGS['data_output_ext']
-    Image.fromarray(enhance_test_img).save(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png')
+        resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
+        resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
+        resize_input_img = resize_input_img[None, :, :, :]
 
-    return enhanced_img_file_name
+        dict_d = [resize_input_img, 1]
+        dict_t = [test_df.input1_src, test_df.rate]
+        gfeature = sess.run(netG_test_gfeature1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+        h, w, c = input_img.shape
+        rate = int(round(max(h, w) / FLAGS['data_image_size']))
+        if rate == 0:
+            rate = 1
+        padrf = rate * FLAGS['data_padrf_size']
+        patch = FLAGS['data_patch_size']
+        pad_h = 0 if h % patch == 0 else patch - (h % patch)
+        pad_w = 0 if w % patch == 0 else patch - (w % patch)
+        pad_h = pad_h + padrf if pad_h < padrf else pad_h
+        pad_w = pad_w + padrf if pad_w < padrf else pad_w
+        input_img = np.pad(input_img, [(padrf, pad_h), (padrf, pad_w), (0, 0)], 'reflect')
+        y_list = []
+        for y in range(padrf, h+padrf, patch):
+            x_list = []
+            for x in range(padrf, w+padrf, patch):
+                crop_img = input_img[None, y-padrf:y+padrf+patch, x-padrf:x+padrf+patch, :]
+                dict_d = [crop_img, gfeature, rate]
+                dict_t = [test_df.input1_src, test_df.input2, test_df.rate]
+                enhance_test_img = sess.run(netG_test_output1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+                enhance_test_img = enhance_test_img[0, padrf:-padrf, padrf:-padrf, :]
+                x_list.append(enhance_test_img)
+            y_list.append(np.concatenate(x_list, axis=1))
+        enhance_test_img = np.concatenate(y_list, axis=0)
+        enhance_test_img = enhance_test_img[:h, :w, :]
+        enhance_test_img = safe_casting(enhance_test_img * tf.as_dtype(FLAGS['data_input_dtype']).max, FLAGS['data_input_dtype'])
+        enhanced_img_file_name = file_out_name_without_ext + FLAGS['data_output_ext']
+        Image.fromarray(enhance_test_img).save(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png')
+
+        return enhanced_img_file_name
