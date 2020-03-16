@@ -73,26 +73,26 @@ def normalizeImage(img, max_length):
 def getInputPhoto(file_name):
     print(current_time() + ', [getInputPhoto]: file_name = %s' % (FLAGS['folder_input'] + file_name))
     file_name_without_ext = os.path.splitext(file_name)[0]
-    input_img = np.array(Image.open(FLAGS['folder_input'] + file_name))
+    input_img = np.array(Image.open(FLAGS['folder_input'] + file_name))[:, :, ::-1]
     os.remove(FLAGS['folder_input'] + file_name)
     if checkValidImg(input_img):
         h, w, _ = input_img.shape
         resize_input_img = normalizeImage(input_img, FLAGS['data_max_image_size']) if max(h, w) > FLAGS['data_max_image_size'] else input_img
         file_name = file_name_without_ext + FLAGS['data_output_ext']
-        Image.fromarray(resize_input_img).save(FLAGS['folder_input'] + file_name_without_ext + '.png')
+        Image.fromarray(resize_input_img[:, :, ::-1]).save(FLAGS['folder_input'] + file_name_without_ext + '.png')
         return file_name
     else:
         return None
 
 def processImg(file_in_name, file_out_name_without_ext):
-    input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))
     # loaded_graph = tf.Graph()
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
-        # saver.restore(sess, FLAGS['load_model_path_new'])
-
+        # tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
+        saver.restore(sess, FLAGS['load_model_path_new'])
+        
+        input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))[:, :, ::-1]
         resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
         resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
         resize_input_img = resize_input_img[None, :, :, :]
@@ -126,6 +126,6 @@ def processImg(file_in_name, file_out_name_without_ext):
         enhance_test_img = enhance_test_img[:h, :w, :]
         enhance_test_img = safe_casting(enhance_test_img * tf.as_dtype(FLAGS['data_input_dtype']).max, FLAGS['data_input_dtype'])
         enhanced_img_file_name = file_out_name_without_ext + FLAGS['data_output_ext']
-        Image.fromarray(enhance_test_img).save(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png')
+        Image.fromarray(enhance_test_img[:, :, ::-1]).save(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png')
 
         return enhanced_img_file_name

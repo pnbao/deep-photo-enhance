@@ -4,7 +4,7 @@ import os
 UPLOAD_FOLDER = 'static/data/input'
 PROCESSED_FOLDER = 'static/data/output'
 
-photo = 'news.png'
+photo = '86cbc4e50304576bc52092b6b21655c7_l.png'
 file_name = TF.getInputPhoto(photo)
 
 print(FUNCTION.current_time() + "Processing image " + file_name)
