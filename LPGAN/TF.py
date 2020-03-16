@@ -34,13 +34,30 @@ with tf.name_scope("Resize"):
     tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
     tf_resize_img = tf.compat.v1.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
     
-sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
-sess_config.gpu_options.allow_growth = True
+# sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+# sess_config.gpu_options.allow_growth = True
 
-sess = tf.compat.v1.Session(config=sess_config)
-sess.run(tf.compat.v1.global_variables_initializer())
-sess.run(tf.compat.v1.local_variables_initializer())
-saver.restore(sess, FLAGS['load_model_path_new'])
+# sess = tf.compat.v1.Session(config=sess_config)
+# sess.run(tf.compat.v1.global_variables_initializer())
+# sess.run(tf.compat.v1.local_variables_initializer())
+# saver.restore(sess, FLAGS['load_model_path_new'])
+
+graph = load_graph(FLAGS['load_saved_model_path'])
+sess = tf.compat.v1.Session(graph=graph)
+
+def load_graph(frozen_graph_filename):
+    # We load the protobuf file from the disk and parse it to retrieve the 
+    # unserialized graph_def
+    with tf.gfile.GFile(frozen_graph_filename, "rb") as f:
+        graph_def = tf.GraphDef()
+        graph_def.ParseFromString(f.read())
+
+    # Then, we import the graph_def into a new Graph and returns it 
+    with tf.Graph().as_default() as graph:
+        # The name var will prefix every op/nodes in your graph
+        # Since we load everything in a new graph, this is not needed
+        tf.import_graph_def(graph_def, name="prefix")
+    return graph
 
 
 def checkValidImg(input_img):
@@ -86,7 +103,7 @@ def getInputPhoto(file_name):
         return None
 
 def processImg(file_in_name, file_out_name_without_ext):
-    input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name).convert('RGBA'))
+    input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))
     resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
     resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
     resize_input_img = resize_input_img[None, :, :, :]
