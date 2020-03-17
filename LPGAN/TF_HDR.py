@@ -88,12 +88,11 @@ def getInputPhoto(file_name):
 
 def processImg(file_in_name, file_out_name_without_ext):
     print(current_time() + ', [processImg]: file_name = %s' % (FLAGS['folder_input'] + file_in_name))
-    # loaded_graph = tf.Graph()
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        # tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
-        saver.restore(sess, FLAGS['load_model_path_new'])
+        tf.saved_model.load(sess, ["serve"], FLAGS['load_saved_model_path'])
+        #saver.restore(sess, FLAGS['load_model_path_new'])
 
         input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))[:, :, ::-1]
         resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])

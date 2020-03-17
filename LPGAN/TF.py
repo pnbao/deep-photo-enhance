@@ -26,7 +26,7 @@ with tf.name_scope(netG.name):
 
 
 assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(parameters)'
-saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
+#saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
 
 with tf.name_scope("Resize"):
     tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
@@ -89,8 +89,8 @@ def processImg(file_in_name, file_out_name_without_ext):
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        # tf.saved_model.loader.load(sess, ["train", "serve"], FLAGS['load_saved_model_path'])
-        saver.restore(sess, FLAGS['load_model_path_new'])
+        tf.saved_model.loader.load(sess, ["serve"], FLAGS['load_saved_model_path'])
+        #saver.restore(sess, FLAGS['load_model_path_new'])
         
         input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))[:, :, ::-1]
         resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
