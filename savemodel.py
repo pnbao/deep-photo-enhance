@@ -31,6 +31,16 @@ with tf.compat.v1.Session() as sess:
     loader.restore(sess, trained_checkpoint_prefix)
     
     # Export checkpoint to SavedModel
-    builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(export_dir)
-    builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING], strip_default_attrs=True)
-    builder.save()
+    # builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(export_dir)
+    # builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING], strip_default_attrs=True)
+    # builder.save()
+
+    output_node_names = ['output:0']
+    frozen_graph_def = tf.graph_util.convert_variables_to_constants(
+        sess,
+        sess.graph_def,
+        output_node_names)
+
+    # Save the frozen graph
+    with open('saved_model.pb', 'wb') as f:
+      f.write(frozen_graph_def.SerializeToString())
