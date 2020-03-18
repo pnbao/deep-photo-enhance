@@ -34,13 +34,13 @@ with tf.compat.v1.Session() as sess:
     # builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(export_dir)
     # builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING], strip_default_attrs=True)
     # builder.save()
+    output_node_names = ['netG/netG_var_scope/netG_var_scopeA/netG_3_1/Add']
 
-    output_node_names = ['output:0']
     frozen_graph_def = tf.graph_util.convert_variables_to_constants(
         sess,
-        sess.graph_def,
+        tf.get_default_graph().as_graph_def(),
         output_node_names)
 
     # Save the frozen graph
-    with open('saved_model.pb', 'wb') as f:
+    with open('frozen_model.pb', 'wb') as f:
       f.write(frozen_graph_def.SerializeToString())
