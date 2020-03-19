@@ -37,13 +37,13 @@ with tf.name_scope("Resize"):
     tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
     tf_resize_img = tf.compat.v1.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
     
-# sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
 # sess_config.gpu_options.allow_growth = True
 
-# sess = tf.compat.v1.Session(config=sess_config)
-# sess.run(tf.compat.v1.global_variables_initializer())
-# sess.run(tf.compat.v1.local_variables_initializer())
-# saver.restore(sess, FLAGS['load_model_path_new'])
+sess = tf.compat.v1.Session(config=sess_config)
+sess.run(tf.compat.v1.global_variables_initializer())
+sess.run(tf.compat.v1.local_variables_initializer())
+saver.restore(sess, FLAGS['load_model_path_new'])
 
 
 def checkValidImg(input_img):
@@ -134,3 +134,4 @@ def processImg(file_in_name, file_out_name_without_ext):
         Image.fromarray(enhance_test_img[:, :, ::-1]).save(FLAGS['folder_test_img'] + file_out_name_without_ext + '.png')
 
         return enhanced_img_file_name
+
