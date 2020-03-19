@@ -19,6 +19,8 @@ with tf.name_scope(netG.name):
         with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
             netG_test_output1, netG_test_list = model(netG, test_df.input1, test_df.input2, False, netG_act_o, None, is_first=True)
             netG_test_gfeature1 = netG_test_list[25]
+            print("netG_test_gfeature1 ", netG_test_gfeature1)
+            print("netG_test_output1 ", netG_test_output1)
             scopeA.reuse_variables()
             netG_test_dilation_list = []
             for dilation in range(FLAGS['max_dilation']):
@@ -91,8 +93,8 @@ def processImg(file_in_name, file_out_name_without_ext):
     with tf.compat.v1.Session() as sess:
         sess.run(tf.compat.v1.global_variables_initializer())
         sess.run(tf.compat.v1.local_variables_initializer())
-        tf.saved_model.load(sess, ["serve"], FLAGS['load_saved_model_path'])
-        #saver.restore(sess, FLAGS['load_model_path_new'])
+        #tf.saved_model.load(sess, ["serve"], FLAGS['load_saved_model_path'])
+        saver.restore(sess, FLAGS['load_model_path_new'])
 
         input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))[:, :, ::-1]
         resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
@@ -102,7 +104,6 @@ def processImg(file_in_name, file_out_name_without_ext):
         dict_d = [resize_input_img, 1]
         dict_t = [test_df.input1_src, test_df.rate]
         gfeature = sess.run(netG_test_gfeature1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
-
         h, w, c = input_img.shape
         rate = int(round(max(h, w) / FLAGS['data_image_size']))
         if rate == 0:
