@@ -2,37 +2,32 @@ import os
 import tensorflow as tf
 from LPGAN import DATA, MODEL
 
-with tf.gfile.GFile("output_frozen_999.pb", "rb") as f:
-    graph_def = tf.GraphDef()
-    graph_def.ParseFromString(f.read())
-    # Then, we import the graph_def into a new Graph and returns it 
-    with tf.Graph().as_default() as graph:
-        tf.import_graph_def(graph_def, name="prefix")
-    for op in graph.get_operations():
-        print(op.name)
-   
-#with tf.compat.v1.Session() as sess:
-    # Restore from checkpoint
-    #loader = tf.compat.v1.train.import_meta_graph(trained_checkpoint_prefix + '.meta')
-    #sess.run(tf.compat.v1.global_variables_initializer())
-    #sess.run(tf.compat.v1.local_variables_initializer())
-    #loader.restore(sess, trained_checkpoint_prefix)
-    
-    #constant_values = {}
-    #constant_ops = [op for op in sess.graph.get_operations()] # if op.type == "Const"
-    #for constant_op in constant_ops:
-    #    print("BBB ", constant_op.name)
-    # Export checkpoint to SavedModel
-    #builder = tf.compat.v1.saved_model.builder.SavedModelBuilder(export_dir)
-    #builder.add_meta_graph_and_variables(sess, [tf.saved_model.tag_constants.SERVING], strip_default_attrs=True)
-    #builder.save()
-    #output_node_names = ['netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_3/Add_48']
+netG_act_o = dict(size=1, index=0)
 
-    #frozen_graph_def = tf.graph_util.convert_variables_to_constants(
-    #    sess,
-    #    tf.get_default_graph().as_graph_def(),
-    #    output_node_names)
+test_df = DATA_HDR.DataFlow()
+netG = DATA_HDR.NetInfo('netG-%d' % DATA_HDR.FLAGS['num_exp'], test_df)
+with tf.name_scope(netG.name):
+    with tf.compat.v1.variable_scope(netG.variable_scope_name) as scope_full:
+        with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
+            netG_test_output1, netG_test_list = MODEL_HDR.model(netG, test_df.input1, test_df.input2, False, netG_act_o, None, is_first=True)
+            netG_test_gfeature1 = netG_test_list[25]
+            print("netG_test_gfeature1 ", netG_test_gfeature1)
+            print("netG_test_output1 ", netG_test_output1)
 
-    #Save the frozen graph
-    #with open('output_frozen_999.pb', 'wb') as f:
-    #  f.write(frozen_graph_def.SerializeToString())
+saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)   
+sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess = tf.compat.v1.Session(config=sess_config)
+sess.run(tf.compat.v1.global_variables_initializer())
+sess.run(tf.compat.v1.local_variables_initializer())
+saver.restore(sess, DATA_HDR.FLAGS['load_model_path_new'])
+
+output_node_names = ['netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_3_1/Add']
+
+frozen_graph_def = tf.graph_util.convert_variables_to_constants(
+   sess,
+   tf.get_default_graph().as_graph_def(),
+   output_node_names)
+
+Save the frozen graph
+with open('frozen_999.pb', 'wb') as f:
+    f.write(frozen_graph_def.SerializeToString())

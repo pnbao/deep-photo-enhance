@@ -18,29 +18,15 @@ with tf.name_scope(netG.name):
         with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
             netG_test_output1, netG_test_list = model(netG, test_df.input1, test_df.input2, False, netG_act_o, None, is_first=True)
             netG_test_gfeature1 = netG_test_list[25]
-            scopeA.reuse_variables()
-            netG_test_dilation_list = []
-            for dilation in range(FLAGS['max_dilation']):
-                netG_test_dilation_output, _ = model(netG, test_df.input1, test_df.input2, False, netG_act_o, dilation+1)
-                netG_test_dilation_list.append(netG_test_dilation_output)
+            print("netG_test_gfeature1 ", netG_test_gfeature1)
+            print("netG_test_output1 ", netG_test_output1)
 
-
-# assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(parameters)'
-# saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
-
-# with tf.name_scope("Resize"):
-#     tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
-#     tf_img_new_h = tf.compat.v1.placeholder(tf.int32)
-#     tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
-#     tf_resize_img = tf.compat.v1.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
-    
-# sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
-# # sess_config.gpu_options.allow_growth = True
-
-# sess = tf.compat.v1.Session(config=sess_config)
-# sess.run(tf.compat.v1.global_variables_initializer())
-# sess.run(tf.compat.v1.local_variables_initializer())
-# saver.restore(sess, FLAGS['load_model_path_new'])
+saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)   
+sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess = tf.compat.v1.Session(config=sess_config)
+sess.run(tf.compat.v1.global_variables_initializer())
+sess.run(tf.compat.v1.local_variables_initializer())
+saver.restore(sess, FLAGS['load_model_path_new'])
 
 def checkValidImg(input_img):
     print(current_time() + ', [checkValidImg]')
@@ -85,23 +71,18 @@ def getInputPhoto(file_name):
         return None
 
 def processImg(file_in_name, file_out_name_without_ext):
-    # loaded_graph = tf.Graph()
-    # with tf.compat.v1.Session() as sess:
-    #     sess.run(tf.compat.v1.global_variables_initializer())
-    #     sess.run(tf.compat.v1.local_variables_initializer())
-    #     tf.saved_model.loader.load(sess, ["serve"], FLAGS['load_saved_model_path'])
-        #saver.restore(sess, FLAGS['load_model_path_new'])
     print(current_time() + ', [processImg]: file_name = %s' % (FLAGS['folder_input'] + file_in_name))
     input_img = np.array(Image.open(FLAGS['folder_input'] + file_in_name))[:, :, ::-1]
     resize_input_img = normalizeImage(input_img, FLAGS['data_image_size'])
     resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
     resize_input_img = resize_input_img[None, :, :, :]
 
-    with tf.gfile.FastGFile('gfeature.pb', "rb") as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        load_graph = tf.import_graph_def(graph_def, name="")
-    sess = tf.Session(graph=load_graph)
+    #with tf.gfile.FastGFile('gfeature_frozen_999.pb', "rb") as f:
+    #    graph_def = tf.GraphDef()
+    #    graph_def.ParseFromString(f.read())
+    #    load_graph = tf.import_graph_def(graph_def, name="")
+    #sess = tf.Session(graph=load_graph)
+    #sess.run(tf.compat.v1.global_variables_initializer())
 
     dict_d = [resize_input_img, 1]
     dict_t = [test_df.input1_src, test_df.rate]
@@ -118,11 +99,13 @@ def processImg(file_in_name, file_out_name_without_ext):
     pad_w = pad_w + padrf if pad_w < padrf else pad_w
     input_img = np.pad(input_img, [(padrf, pad_h), (padrf, pad_w), (0, 0)], 'reflect')
 
-    with tf.gfile.FastGFile('output.pb', "rb") as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        load_graph = tf.import_graph_def(graph_def, name="")
-    sess = tf.Session(graph=load_graph)
+    #with tf.gfile.FastGFile('output_frozen_999.pb', "rb") as f:
+    #    graph_def = tf.GraphDef()
+    #    graph_def.ParseFromString(f.read())
+    #    load_graph = tf.import_graph_def(graph_def, name="")
+    #sess = tf.Session(graph=load_graph)
+    #sess.run(tf.compat.v1.global_variables_initializer())
+    
     y_list = []
     for y in range(padrf, h+padrf, patch):
         x_list = []

@@ -80,12 +80,12 @@ def processImg(file_in_name, file_out_name_without_ext):
     resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
     resize_input_img = resize_input_img[None, :, :, :]
 
-    #with tf.gfile.FastGFile('gfeature_frozen_999.pb', "rb") as f:
-    #    graph_def = tf.GraphDef()
-    #    graph_def.ParseFromString(f.read())
-    #    load_graph = tf.import_graph_def(graph_def, name="")
-    #sess = tf.Session(graph=load_graph)
-    #sess.run(tf.compat.v1.global_variables_initializer())
+    with tf.gfile.FastGFile('frozen_999.pb', "rb") as f:
+       graph_def = tf.GraphDef()
+       graph_def.ParseFromString(f.read())
+       load_graph = tf.import_graph_def(graph_def, name="")
+    sess = tf.Session(graph=load_graph)
+    sess.run(tf.compat.v1.global_variables_initializer())
 
     dict_d = [resize_input_img, 1]
     dict_t = [test_df.input1_src, test_df.rate]
@@ -104,12 +104,6 @@ def processImg(file_in_name, file_out_name_without_ext):
 
     input_img = np.pad(input_img, [(padrf, pad_h), (padrf, pad_w), (0, 0)], 'reflect')
     y_list = []
-    #with tf.gfile.FastGFile('output_frozen_999.pb', "rb") as f:
-    #    graph_def = tf.GraphDef()
-    #    graph_def.ParseFromString(f.read())
-    #    load_graph = tf.import_graph_def(graph_def, name="")
-    #sess = tf.Session(graph=load_graph)
-    #sess.run(tf.compat.v1.global_variables_initializer())
 
     for y in range(padrf, h+padrf, patch):
         x_list = []
