@@ -22,29 +22,13 @@ with tf.name_scope(netG.name):
             netG_test_gfeature1 = netG_test_list[25]
             print("netG_test_gfeature1 ", netG_test_gfeature1)
             print("netG_test_output1 ", netG_test_output1)
-            scopeA.reuse_variables()
-            netG_test_dilation_list = []
-            for dilation in range(FLAGS['max_dilation']):
-                netG_test_dilation_output, _ = model(netG, test_df.input1, test_df.input2, False, netG_act_o, dilation+1)
-                netG_test_dilation_list.append(netG_test_dilation_output)
 
-
-# assert len(netG.weights) == len(netG.parameter_names), 'len(weights) != len(parameters)'
-# saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)
-
-# with tf.name_scope("Resize"):
-#     tf_input_img_ori = tf.compat.v1.placeholder(tf.uint8, shape=[None, None, 3])
-#     tf_img_new_h = tf.compat.v1.placeholder(tf.int32)
-#     tf_img_new_w = tf.compat.v1.placeholder(tf.int32)
-#     tf_resize_img = tf.compat.v1.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
-    
-# sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
-# # sess_config.gpu_options.allow_growth = True
-
-# sess = tf.compat.v1.Session(config=sess_config)
-# sess.run(tf.compat.v1.global_variables_initializer())
-# sess.run(tf.compat.v1.local_variables_initializer())
-# saver.restore(sess, FLAGS['load_model_path_new'])
+saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)   
+sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess = tf.compat.v1.Session(config=sess_config)
+sess.run(tf.compat.v1.global_variables_initializer())
+sess.run(tf.compat.v1.local_variables_initializer())
+saver.restore(sess, FLAGS['load_model_path_new'])
 
 
 def checkValidImg(input_img):
@@ -96,15 +80,17 @@ def processImg(file_in_name, file_out_name_without_ext):
     resize_input_img, _, _ = random_pad_to_size(resize_input_img, FLAGS['data_image_size'], None, True, False)
     resize_input_img = resize_input_img[None, :, :, :]
 
-    with tf.gfile.FastGFile('gfeature.pb', "rb") as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        load_graph = tf.import_graph_def(graph_def, name="")
-    sess = tf.Session(graph=load_graph)
-    
+    #with tf.gfile.FastGFile('gfeature_frozen_999.pb', "rb") as f:
+    #    graph_def = tf.GraphDef()
+    #    graph_def.ParseFromString(f.read())
+    #    load_graph = tf.import_graph_def(graph_def, name="")
+    #sess = tf.Session(graph=load_graph)
+    #sess.run(tf.compat.v1.global_variables_initializer())
+
     dict_d = [resize_input_img, 1]
     dict_t = [test_df.input1_src, test_df.rate]
-    gfeature = sess.run(netG_test_gfeature1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+    gfeature = sess.run("netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_2/BiasAdd_3:0", feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+    print("gfeatureeeeeee ", gfeature)
     h, w, c = input_img.shape
     rate = int(round(max(h, w) / FLAGS['data_image_size']))
     if rate == 0:
@@ -118,18 +104,21 @@ def processImg(file_in_name, file_out_name_without_ext):
 
     input_img = np.pad(input_img, [(padrf, pad_h), (padrf, pad_w), (0, 0)], 'reflect')
     y_list = []
-    with tf.gfile.FastGFile('output.pb', "rb") as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        load_graph = tf.import_graph_def(graph_def, name="")
-    sess = tf.Session(graph=load_graph)
+    #with tf.gfile.FastGFile('output_frozen_999.pb', "rb") as f:
+    #    graph_def = tf.GraphDef()
+    #    graph_def.ParseFromString(f.read())
+    #    load_graph = tf.import_graph_def(graph_def, name="")
+    #sess = tf.Session(graph=load_graph)
+    #sess.run(tf.compat.v1.global_variables_initializer())
+
     for y in range(padrf, h+padrf, patch):
         x_list = []
         for x in range(padrf, w+padrf, patch):
             crop_img = input_img[None, y-padrf:y+padrf+patch, x-padrf:x+padrf+patch, :]
             dict_d = [crop_img, gfeature, rate]
             dict_t = [test_df.input1_src, test_df.input2, test_df.rate]
-            enhance_test_img = sess.run(netG_test_output1, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+            enhance_test_img = sess.run("netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_3/Add_48:0", feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+            print("enhance_test_imgggggggggggg ", enhance_test_img)
             enhance_test_img = enhance_test_img[0, padrf:-padrf, padrf:-padrf, :]
             x_list.append(enhance_test_img)
         y_list.append(np.concatenate(x_list, axis=1))
