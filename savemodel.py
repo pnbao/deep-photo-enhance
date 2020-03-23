@@ -5,7 +5,7 @@ from LPGAN import DATA_HDR, MODEL_HDR
 netG_act_o = dict(size=1, index=0)
 
 test_df = DATA_HDR.DataFlow()
-netG = DATA_HDR.NetInfo('netG-%d' % DATA_HDR.FLAGS['num_exp'], test_df)
+netG = DATA_HDR.NetInfo('netG-%d' % DATA_HDR.FLAGS['num_exp_HDR'], test_df)
 with tf.name_scope(netG.name):
     with tf.compat.v1.variable_scope(netG.variable_scope_name) as scope_full:
         with tf.compat.v1.variable_scope(netG.variable_scope_name + 'A') as scopeA:
