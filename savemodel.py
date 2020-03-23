@@ -1,6 +1,6 @@
 import os
 import tensorflow as tf
-from LPGAN import DATA, MODEL
+from LPGAN import DATA_HDR, MODEL_HDR
 
 netG_act_o = dict(size=1, index=0)
 
@@ -28,6 +28,6 @@ frozen_graph_def = tf.graph_util.convert_variables_to_constants(
    tf.get_default_graph().as_graph_def(),
    output_node_names)
 
-Save the frozen graph
+#Save the frozen graph
 with open('frozen_999.pb', 'wb') as f:
     f.write(frozen_graph_def.SerializeToString())
