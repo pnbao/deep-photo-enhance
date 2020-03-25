@@ -21,7 +21,7 @@ sess.run(tf.compat.v1.global_variables_initializer())
 sess.run(tf.compat.v1.local_variables_initializer())
 saver.restore(sess, DATA_HDR.FLAGS['load_model_path_new'])
 
-output_node_names = ['netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_3_1/Add']
+output_node_names = ['netG-999/netG-999_var_scope/netG-999_var_scopeA/netG-999_3/Add']
 
 frozen_graph_def = tf.graph_util.convert_variables_to_constants(
    sess,
