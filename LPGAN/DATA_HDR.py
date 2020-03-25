@@ -5,7 +5,7 @@ import random, os
 from .CONVNET import *
 # Configure
 FLAGS = {}
-FLAGS['num_gpu'] = '1'
+FLAGS['num_gpu'] = '0'
 FLAGS['num_exp_HDR']   = 999
 FLAGS['num_epoch_HDR'] = 90
 FLAGS['method'] = 'Supervised on MIT-Adobe-5K'
