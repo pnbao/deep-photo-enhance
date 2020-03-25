@@ -62,8 +62,12 @@ def normalizeImage(img, max_length):
 
     is_need_resize = max_l != FLAGS['data_image_size']
     if is_need_resize:
-        img = cpu_normalize_image(img, max_length)
-        print("Finish normalize using CPU")
+        new_h, new_w = get_normalize_size_shape_method(img, max_length)
+        dict_d = [img, new_h, new_w]
+        dict_t = [tf_input_img_ori, tf_img_new_h, tf_img_new_w]
+        img = sess.run(tf_resize_img, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+        # img = cpu_normalize_image(img, max_length)
+        # print("Finish normalize using CPU")
     return img
 
 def getInputPhoto(file_name):
