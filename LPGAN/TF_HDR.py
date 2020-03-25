@@ -23,8 +23,15 @@ with tf.name_scope(netG.name):
             print("netG_test_gfeature1 HDR ", netG_test_gfeature1)
             print("netG_test_output1 HDR ", netG_test_output1)
 
+with tf.name_scope("Resize"):
+    tf_input_img_ori = tf.placeholder(tf.uint8, shape=[None, None, 3])
+    tf_img_new_h = tf.placeholder(tf.int32)
+    tf_img_new_w = tf.placeholder(tf.int32)
+    tf_resize_img = tf.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
+
 saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)   
 sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess_config.gpu_options.allow_growth = True
 sess = tf.compat.v1.Session(config=sess_config)
 sess.run(tf.compat.v1.global_variables_initializer())
 sess.run(tf.compat.v1.local_variables_initializer())

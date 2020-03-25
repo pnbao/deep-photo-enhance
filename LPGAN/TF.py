@@ -21,8 +21,15 @@ with tf.name_scope(netG.name):
             print("netG_test_gfeature1 TF ", netG_test_gfeature1)
             print("netG_test_output1 TF ", netG_test_output1)
 
+with tf.name_scope("Resize"):
+    tf_input_img_ori = tf.placeholder(tf.uint8, shape=[None, None, 3])
+    tf_img_new_h = tf.placeholder(tf.int32)
+    tf_img_new_w = tf.placeholder(tf.int32)
+    tf_resize_img = tf.image.resize_images(images=tf_input_img_ori, size=[tf_img_new_h, tf_img_new_w], method=tf.image.ResizeMethod.AREA)
+
 saver = tf.compat.v1.train.Saver(var_list=netG.weights, max_to_keep=None)   
 sess_config = tf.compat.v1.ConfigProto(log_device_placement=False)
+sess_config.gpu_options.allow_growth = True
 sess = tf.compat.v1.Session(config=sess_config)
 sess.run(tf.compat.v1.global_variables_initializer())
 sess.run(tf.compat.v1.local_variables_initializer())
@@ -52,8 +59,13 @@ def normalizeImage(img, max_length):
 
     is_need_resize = max_l != FLAGS['data_image_size']
     if is_need_resize:
-        img = cpu_normalize_image(img, max_length)
-        print("Finish normalize using CPU")
+        new_h, new_w, is_normalize = get_normalize_size_shape_method(img, max_length)
+        if not is_normalize:
+            dict_d = [img, new_h, new_w]
+            dict_t = [tf_input_img_ori, tf_img_new_h, tf_img_new_w]
+            img = sess.run(tf_resize_img, feed_dict={t:d for t, d in zip(dict_t, dict_d)})
+        # img = cpu_normalize_image(img, max_length)
+        # print("Finish normalize using CPU")
     return img
 
 def getInputPhoto(file_name):
