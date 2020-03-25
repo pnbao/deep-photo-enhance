@@ -33,7 +33,7 @@ def upload_file():
 		if file and allowed_file(file.filename):
 			filename = secure_filename(file.filename)
 			file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			return redirect(url_for('process', photo=filename))
+			return redirect(url_for('process', photo=os.path.basename(filename)))
 	return render_template('index.html')
 
 @app.route('/process/<photo>', methods=['GET', 'POST'])
